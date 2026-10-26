@@ -11,6 +11,8 @@
     "test": "uv run pytest",
     "codegen": "uv run windsight export-openapi --out ../../packages/api-client/openapi.json",
     "db:migrate": "uv run alembic upgrade head",
-    "ingest": "uv run windsight ingest"
+    "ingest": "uv run windsight ingest",
+    "test:unit": "uv run pytest -m unit",
+    "test:integration": "uv run pytest -m integration"
   }
 }

@@ -1,0 +1,58 @@
+WEBVTT
+
+00:00:01.059 --> 00:00:06.172
+Windsight: day-ahead wind forecast monitoring for UK power procurement.
+
+00:00:06.172 --> 00:00:12.685
+Every morning the buying team decides how much power to buy for tomorrow. The big unknown is wind.
+
+00:00:12.685 --> 00:00:19.149
+At the 09:00 cutoff, Windsight shows the latest forecast the buyer actually had, in one sentence.
+
+00:00:19.149 --> 00:00:25.770
+Firm wind (P90) is the level beaten in 9 of 10 recent hours: a safe floor to size purchases against.
+
+00:00:25.770 --> 00:00:32.697
+The chart compares the official forecast (dashed), the bias-adjusted forecast (violet) and a P10–P90 band.
+
+00:00:32.697 --> 00:00:37.239
+Hide the outturn to see exactly what the buyer saw at 09:00…
+
+00:00:37.239 --> 00:00:44.285
+…then reveal what actually happened. The adjusted line was closer than the raw forecast.
+
+00:00:44.285 --> 00:00:52.401
+Step back through January. 28 Jan was the worst day of the month: wind collapsed below the floor.
+
+00:00:52.401 --> 00:00:58.760
+Change the decision cutoff and Windsight switches to the newest forecast run published by then.
+
+00:00:58.760 --> 00:01:03.006
+Hourly values and a CSV export are one click away.
+
+00:01:03.006 --> 00:01:07.750
+The Accuracy view answers: how far can this forecast be trusted?
+
+00:01:07.750 --> 00:01:13.385
+In January the official forecast ran high on 27 of 31 days, by 1.7 GW on average.
+
+00:01:13.385 --> 00:01:20.107
+A leakage-free trailing bias correction cuts the error by 30%, and the P10–P90 band held 86% of hours.
+
+00:01:20.107 --> 00:01:25.324
+Daily, hourly and lead-time error charts show where the misses come from.
+
+00:01:25.324 --> 00:01:31.321
+Error grows with lead time, so a later decision, where the market allows, buys accuracy.
+
+00:01:31.321 --> 00:01:36.806
+The Horizon explorer replays any range with forecasts published N hours ahead.
+
+00:01:36.806 --> 00:01:41.551
+Drag the horizon down to 2 hours: the forecast hugs the outturn…
+
+00:01:41.551 --> 00:01:46.136
+…and out to 48 hours: the misses grow, and the MAE with them.
+
+00:01:46.136 --> 00:01:52.179
+Every view is a shareable URL. Data: Elexon BMRS FUELHH and WINDFOR. Thanks for watching!

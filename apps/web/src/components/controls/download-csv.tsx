@@ -1,12 +1,6 @@
 "use client";
 
-type Cell = string | number | null | undefined;
-
-const escape = (cell: Cell) => {
-  if (cell == null) return "";
-  const s = typeof cell === "number" ? String(Math.round(cell * 100) / 100) : cell;
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
+import { type CsvCell, toCsv } from "@/lib/csv";
 
 /** Exports data already on the page; no extra API call. */
 export function DownloadCsv({
@@ -16,10 +10,10 @@ export function DownloadCsv({
 }: {
   filename: string;
   header: string[];
-  rows: Cell[][];
+  rows: CsvCell[][];
 }) {
   const download = () => {
-    const csv = [header, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+    const csv = toCsv(header, rows);
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const a = Object.assign(document.createElement("a"), { href: url, download: filename });
     a.click();

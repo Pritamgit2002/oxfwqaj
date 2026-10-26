@@ -1,3 +1,4 @@
+import os
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 
@@ -9,9 +10,21 @@ from sqlalchemy.pool import StaticPool
 
 from windsight.core.config import Settings, get_settings
 from windsight.db.models import Base
-from windsight.db.session import get_session
+from windsight.db.session import build_engine, get_session
 from windsight.main import create_app
 from windsight.repositories.generation import GenerationRepository
+
+# Integration tests run on in-memory SQLite by default; point TEST_DATABASE_URL at a scratch
+# Postgres database to exercise the production dialect (tables are dropped and recreated).
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Mark tests by folder so `pytest -m unit` / `pytest -m integration` select a layer."""
+    for item in items:
+        for layer in ("unit", "integration"):
+            if f"{os.sep}{layer}{os.sep}" in str(item.path):
+                item.add_marker(layer)
 
 
 @pytest.fixture
@@ -21,11 +34,22 @@ def settings() -> Settings:
 
 @pytest.fixture
 def engine() -> Iterator[Engine]:
-    engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
-    )
+    yield from make_engine()
+
+
+def make_engine() -> Iterator[Engine]:
+    """A database with the current schema, emptied before and after use."""
+    if TEST_DATABASE_URL:
+        engine = build_engine(Settings(database_url=TEST_DATABASE_URL).database_url)
+        Base.metadata.drop_all(engine)
+    else:
+        engine = create_engine(
+            "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+        )
     Base.metadata.create_all(engine)
     yield engine
+    if TEST_DATABASE_URL:
+        Base.metadata.drop_all(engine)
     engine.dispose()
 
 
@@ -42,6 +66,11 @@ def session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
 
 @pytest.fixture
 def client(settings: Settings, session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+    yield from make_client(settings, session_factory)
+
+
+def make_client(settings: Settings, session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+    """The real app, wired to the test database and settings."""
     app = create_app()
 
     def override_session() -> Iterator[Session]:

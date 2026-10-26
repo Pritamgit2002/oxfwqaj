@@ -42,6 +42,8 @@ export function DecisionControls({
             </button>
             <input
               type="date"
+              // The wrapping <label> names the first control inside it (the ‹ button).
+              aria-label="Decision day (D-1)"
               className={inputClass}
               value={decisionDate}
               min={min}
