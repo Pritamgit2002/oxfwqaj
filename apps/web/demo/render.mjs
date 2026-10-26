@@ -12,7 +12,8 @@ const out = path.join(here, "out");
 const docs = path.resolve(here, "../../../docs/demo");
 mkdirSync(docs, { recursive: true });
 
-const cues = JSON.parse(readFileSync(path.join(out, "captions.json"), "utf8"));
+// Cue times are relative to the title card; the page-load frames before it are trimmed off.
+const { trimMs, cues } = JSON.parse(readFileSync(path.join(out, "captions.json"), "utf8"));
 
 const stamp = (ms, sep) => {
   const pad = (n, w = 2) => String(Math.floor(n)).padStart(w, "0");
@@ -36,6 +37,8 @@ const ffmpeg = (...args) =>
   });
 
 ffmpeg(
+  "-ss",
+  String(trimMs / 1000),
   "-i",
   path.join(out, "raw.webm"),
   "-i",

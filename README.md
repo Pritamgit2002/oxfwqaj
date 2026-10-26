@@ -13,11 +13,12 @@ Pilot scope: national wind only, Elexon BMRS data, purchase decisions made in **
 
 ## Demo
 
-[![Windsight demo: a two-minute subtitled walkthrough. Click for the full-quality MP4.](docs/demo/windsight-demo.gif)](docs/demo/windsight-demo.mp4)
+[![Windsight demo: a one-minute subtitled walkthrough. Click for the full-quality MP4.](docs/demo/windsight-demo.gif)](docs/demo/windsight-demo.mp4)
 
-A two-minute walkthrough of the app on the real January 2026 Elexon data: the 09:00 decision
+A one-minute walkthrough of the app on the real January 2026 Elexon data: the 09:00 decision
 brief, hiding and revealing the outturn, stepping back to the worst day of the month, changing the
-cutoff, CSV export, the accuracy backtest and the horizon explorer.
+cutoff, CSV export, the accuracy backtest and the horizon explorer, ending with the headline
+results.
 
 - **Full quality:** [`windsight-demo.mp4`](docs/demo/windsight-demo.mp4) (1280×720, subtitles
   burned in, plus a selectable English subtitle track)
