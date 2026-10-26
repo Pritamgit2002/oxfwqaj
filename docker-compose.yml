@@ -1,0 +1,75 @@
+# Full stack: Postgres -> migrations -> Elexon ingestion -> API -> web.
+#   docker compose up --build        # then open http://localhost:3000
+name: windsight
+
+x-api-env: &api-env
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-windsight}:${POSTGRES_PASSWORD:-windsight}@db:5432/${POSTGRES_DB:-windsight}
+  LOG_LEVEL: INFO
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-windsight}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-windsight}
+      POSTGRES_DB: ${POSTGRES_DB:-windsight}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # One-shot: apply Alembic migrations.
+  migrate:
+    image: windsight-api:local
+    build: ./apps/api
+    command: ["alembic", "upgrade", "head"]
+    environment: *api-env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  # One-shot: load the January 2026 pilot window from Elexon (idempotent upserts).
+  ingest:
+    image: windsight-api:local
+    build: ./apps/api
+    command: ["windsight", "ingest"]
+    environment: *api-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  api:
+    image: windsight-api:local
+    build: ./apps/api
+    environment:
+      <<: *api-env
+      CORS_ORIGINS: '["http://localhost:3000"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      API_BASE_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

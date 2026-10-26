@@ -1,0 +1,1298 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Windsight API",
+    "description": "Wind generation forecasts and their accuracy for UK day-ahead power procurement. Source data: Elexon BMRS FUELHH (actuals) and WINDFOR (forecasts).",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness",
+        "operationId": "liveness_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness",
+        "operationId": "readiness_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Meta",
+        "description": "Pilot scope, defaults and data freshness.",
+        "operationId": "meta_api_v1_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetaOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/day-ahead": {
+      "get": {
+        "tags": [
+          "day-ahead"
+        ],
+        "summary": "Day Ahead",
+        "description": "The forecast a buyer had at the D-1 cutoff for `delivery_date`, against what happened.",
+        "operationId": "day_ahead_api_v1_day_ahead_get",
+        "parameters": [
+          {
+            "name": "delivery_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Delivery Date"
+            }
+          },
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local decision cutoff on D-1 (HH:MM). Defaults to the server setting.",
+              "title": "Cutoff"
+            },
+            "description": "Local decision cutoff on D-1 (HH:MM). Defaults to the server setting."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayAheadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accuracy/day-ahead": {
+      "get": {
+        "tags": [
+          "accuracy"
+        ],
+        "summary": "Day Ahead Accuracy",
+        "description": "Error statistics of decision-time forecasts across the whole pilot window.",
+        "operationId": "day_ahead_accuracy_api_v1_accuracy_day_ahead_get",
+        "parameters": [
+          {
+            "name": "cutoff",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Local decision cutoff on D-1 (HH:MM). Defaults to the server setting.",
+              "title": "Cutoff"
+            },
+            "description": "Local decision cutoff on D-1 (HH:MM). Defaults to the server setting."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DayAheadAccuracyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accuracy/horizon": {
+      "get": {
+        "tags": [
+          "accuracy"
+        ],
+        "summary": "Horizon Accuracy",
+        "description": "How forecast error grows with lead time (0 to max_horizon_hours).",
+        "operationId": "horizon_accuracy_api_v1_accuracy_horizon_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HorizonAccuracyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/series": {
+      "get": {
+        "tags": [
+          "explorer"
+        ],
+        "summary": "Series",
+        "description": "Actuals vs the latest forecast published at least `horizon_hours` before each target.",
+        "operationId": "series_api_v1_series_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start"
+            }
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End"
+            }
+          },
+          {
+            "name": "horizon_hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 72,
+              "minimum": 0,
+              "default": 24,
+              "title": "Horizon Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActualsCoverage": {
+        "properties": {
+          "rows": {
+            "type": "integer",
+            "title": "Rows"
+          },
+          "first_start_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Start Time"
+          },
+          "last_start_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Start Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rows",
+          "first_start_time",
+          "last_start_time"
+        ],
+        "title": "ActualsCoverage"
+      },
+      "CalibrationOut": {
+        "properties": {
+          "window_days": {
+            "type": "integer",
+            "title": "Window Days"
+          },
+          "days_used": {
+            "type": "integer",
+            "title": "Days Used"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          },
+          "p10_error_mw": {
+            "type": "number",
+            "title": "P10 Error Mw"
+          },
+          "p90_error_mw": {
+            "type": "number",
+            "title": "P90 Error Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window_days",
+          "days_used",
+          "bias_mw",
+          "p10_error_mw",
+          "p90_error_mw"
+        ],
+        "title": "CalibrationOut",
+        "description": "Error profile learned from delivery days fully settled before the decision (D-2 back)."
+      },
+      "DailyAccuracy": {
+        "properties": {
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "forecast_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Publish Time"
+          },
+          "forecast_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Mwh"
+          },
+          "actual_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mwh"
+          },
+          "mae_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mae Mw"
+          },
+          "bias_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bias Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_date",
+          "forecast_publish_time",
+          "forecast_mwh",
+          "actual_mwh",
+          "mae_mw",
+          "bias_mw"
+        ],
+        "title": "DailyAccuracy"
+      },
+      "DataCoverage": {
+        "properties": {
+          "actuals": {
+            "$ref": "#/components/schemas/ActualsCoverage"
+          },
+          "forecasts": {
+            "$ref": "#/components/schemas/ForecastsCoverage"
+          },
+          "last_ingested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Ingested At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actuals",
+          "forecasts",
+          "last_ingested_at"
+        ],
+        "title": "DataCoverage"
+      },
+      "DateWindow": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "DateWindow"
+      },
+      "DayAheadAccuracyOut": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "time",
+            "title": "Cutoff"
+          },
+          "delivery_window": {
+            "$ref": "#/components/schemas/DateWindow"
+          },
+          "calibration_window_days": {
+            "type": "integer",
+            "title": "Calibration Window Days"
+          },
+          "stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorStatsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "adjusted_stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorStatsOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Error of the bias-corrected forecast (out of sample, same hours as stats)"
+          },
+          "band_coverage_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Band Coverage Pct",
+            "description": "Share of hours whose outturn fell inside the P10-P90 band (target: 80%)"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/DailyAccuracy"
+            },
+            "type": "array",
+            "title": "Daily"
+          },
+          "by_hour": {
+            "items": {
+              "$ref": "#/components/schemas/HourlyAccuracy"
+            },
+            "type": "array",
+            "title": "By Hour"
+          },
+          "error_histogram": {
+            "items": {
+              "$ref": "#/components/schemas/HistogramBinOut"
+            },
+            "type": "array",
+            "title": "Error Histogram"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff",
+          "delivery_window",
+          "calibration_window_days",
+          "stats",
+          "adjusted_stats",
+          "band_coverage_pct",
+          "daily",
+          "by_hour",
+          "error_histogram"
+        ],
+        "title": "DayAheadAccuracyOut"
+      },
+      "DayAheadOut": {
+        "properties": {
+          "delivery_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Delivery Date"
+          },
+          "decision_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Decision Time",
+            "description": "When the purchase decision is committed (UTC)"
+          },
+          "forecast_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Publish Time",
+            "description": "Publish time of the latest forecast run available at the decision time"
+          },
+          "forecast_age_hours": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Age Hours",
+            "description": "How old that forecast run was at the decision time"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DayAheadSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calibration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CalibrationOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "actual_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mwh"
+          },
+          "stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorStatsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/DayAheadPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delivery_date",
+          "decision_time",
+          "forecast_publish_time",
+          "forecast_age_hours",
+          "summary",
+          "calibration",
+          "actual_mwh",
+          "stats",
+          "points"
+        ],
+        "title": "DayAheadOut"
+      },
+      "DayAheadPoint": {
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "actual_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mw"
+          },
+          "forecast_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Mw"
+          },
+          "error_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Mw"
+          },
+          "adjusted_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Mw",
+            "description": "Forecast minus the trailing bias"
+          },
+          "band_low_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Band Low Mw",
+            "description": "P10 of the outturn implied by recent errors"
+          },
+          "band_high_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Band High Mw",
+            "description": "P90 of the outturn implied by recent errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_time",
+          "actual_mw",
+          "forecast_mw",
+          "error_mw",
+          "adjusted_mw",
+          "band_low_mw",
+          "band_high_mw"
+        ],
+        "title": "DayAheadPoint"
+      },
+      "DayAheadSummary": {
+        "properties": {
+          "forecast_mwh": {
+            "type": "number",
+            "title": "Forecast Mwh"
+          },
+          "adjusted_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted Mwh",
+            "description": "Bias-corrected expected wind energy"
+          },
+          "firm_mwh": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Firm Mwh",
+            "description": "Wind energy exceeded with 90% confidence (sum of the band's low edge)"
+          },
+          "avg_mw": {
+            "type": "number",
+            "title": "Avg Mw"
+          },
+          "peak_mw": {
+            "type": "number",
+            "title": "Peak Mw"
+          },
+          "trough_mw": {
+            "type": "number",
+            "title": "Trough Mw",
+            "description": "Mean forecast over the lowest-wind window"
+          },
+          "trough_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Trough Start"
+          },
+          "trough_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Trough End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "forecast_mwh",
+          "adjusted_mwh",
+          "firm_mwh",
+          "avg_mw",
+          "peak_mw",
+          "trough_mw",
+          "trough_start",
+          "trough_end"
+        ],
+        "title": "DayAheadSummary",
+        "description": "Headline numbers for the decision, computed from the forecast in hand."
+      },
+      "ErrorStatsOut": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Number of hourly forecast/actual pairs"
+          },
+          "mae_mw": {
+            "type": "number",
+            "title": "Mae Mw",
+            "description": "Mean absolute error"
+          },
+          "rmse_mw": {
+            "type": "number",
+            "title": "Rmse Mw",
+            "description": "Root mean squared error"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw",
+            "description": "Mean error; > 0 means forecasts run high"
+          },
+          "nmae_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nmae Pct",
+            "description": "MAE as % of mean actual generation"
+          },
+          "p10_error_mw": {
+            "type": "number",
+            "title": "P10 Error Mw"
+          },
+          "p50_error_mw": {
+            "type": "number",
+            "title": "P50 Error Mw"
+          },
+          "p90_error_mw": {
+            "type": "number",
+            "title": "P90 Error Mw",
+            "description": "Shortfall not exceeded in 90% of hours: the cover needed at P90 confidence"
+          },
+          "p90_abs_error_mw": {
+            "type": "number",
+            "title": "P90 Abs Error Mw"
+          },
+          "max_shortfall_mw": {
+            "type": "number",
+            "title": "Max Shortfall Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "mae_mw",
+          "rmse_mw",
+          "bias_mw",
+          "nmae_pct",
+          "p10_error_mw",
+          "p50_error_mw",
+          "p90_error_mw",
+          "p90_abs_error_mw",
+          "max_shortfall_mw"
+        ],
+        "title": "ErrorStatsOut",
+        "description": "Error = forecast - actual. Positive means wind under-delivered (a shortfall)."
+      },
+      "ForecastsCoverage": {
+        "properties": {
+          "rows": {
+            "type": "integer",
+            "title": "Rows"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "first_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Publish Time"
+          },
+          "last_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Publish Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rows",
+          "runs",
+          "first_publish_time",
+          "last_publish_time"
+        ],
+        "title": "ForecastsCoverage"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthOut"
+      },
+      "HistogramBinOut": {
+        "properties": {
+          "lower_mw": {
+            "type": "number",
+            "title": "Lower Mw"
+          },
+          "upper_mw": {
+            "type": "number",
+            "title": "Upper Mw"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lower_mw",
+          "upper_mw",
+          "count"
+        ],
+        "title": "HistogramBinOut"
+      },
+      "HorizonAccuracyOut": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          },
+          "buckets": {
+            "items": {
+              "$ref": "#/components/schemas/HorizonBucket"
+            },
+            "type": "array",
+            "title": "Buckets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "buckets"
+        ],
+        "title": "HorizonAccuracyOut"
+      },
+      "HorizonBucket": {
+        "properties": {
+          "horizon_hours": {
+            "type": "integer",
+            "title": "Horizon Hours",
+            "description": "Lead time bucket [h, h+1)"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/ErrorStatsOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "horizon_hours",
+          "stats"
+        ],
+        "title": "HorizonBucket"
+      },
+      "HourlyAccuracy": {
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Hour",
+            "description": "Local hour of the delivery day"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "mae_mw": {
+            "type": "number",
+            "title": "Mae Mw"
+          },
+          "bias_mw": {
+            "type": "number",
+            "title": "Bias Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hour",
+          "count",
+          "mae_mw",
+          "bias_mw"
+        ],
+        "title": "HourlyAccuracy"
+      },
+      "MetaOut": {
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "default_decision_cutoff": {
+            "type": "string",
+            "format": "time",
+            "title": "Default Decision Cutoff"
+          },
+          "max_horizon_hours": {
+            "type": "integer",
+            "title": "Max Horizon Hours"
+          },
+          "calibration_window_days": {
+            "type": "integer",
+            "title": "Calibration Window Days"
+          },
+          "decision_window": {
+            "$ref": "#/components/schemas/DateWindow"
+          },
+          "delivery_window": {
+            "$ref": "#/components/schemas/DateWindow"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DataCoverage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timezone",
+          "default_decision_cutoff",
+          "max_horizon_hours",
+          "calibration_window_days",
+          "decision_window",
+          "delivery_window",
+          "data"
+        ],
+        "title": "MetaOut"
+      },
+      "SeriesOut": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          },
+          "horizon_hours": {
+            "type": "number",
+            "title": "Horizon Hours"
+          },
+          "stats": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorStatsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "horizon_hours",
+          "stats",
+          "points"
+        ],
+        "title": "SeriesOut"
+      },
+      "SeriesPoint": {
+        "properties": {
+          "start_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Time"
+          },
+          "actual_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mw"
+          },
+          "forecast_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Mw"
+          },
+          "forecast_publish_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forecast Publish Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_time",
+          "actual_mw",
+          "forecast_mw",
+          "forecast_publish_time"
+        ],
+        "title": "SeriesPoint"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

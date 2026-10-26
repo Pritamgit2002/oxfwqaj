@@ -1,0 +1,54 @@
+[project]
+name = "windsight"
+version = "0.1.0"
+description = "Wind generation forecast monitoring API for UK day-ahead power procurement."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "numpy>=2.5.4",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.16.1",
+    "sqlalchemy>=2.1.6",
+    "tzdata>=2026.5",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+windsight = "windsight.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/windsight"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "DTZ"]
+ignore = ["B008"]  # FastAPI's Depends()/Query() in defaults is idiomatic
+
+[tool.mypy]
+files = ["src"]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning:fastapi.testclient", "ignore:Using `httpx` with `starlette.testclient`"]

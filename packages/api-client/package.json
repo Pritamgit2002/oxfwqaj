@@ -1,0 +1,23 @@
+{
+  "name": "@windsight/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed client for the Windsight API. Types are generated from the FastAPI OpenAPI schema.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "codegen": "openapi-typescript ./openapi.json -o ./src/schema.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  },
+  "devDependencies": {
+    "@windsight/typescript-config": "workspace:*",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.9.3"
+  }
+}

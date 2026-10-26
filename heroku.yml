@@ -1,0 +1,12 @@
+# Heroku container deploy of the API (the web app goes to Vercel).
+#   heroku stack:set container && heroku addons:create heroku-postgresql:essential-0
+#   git push heroku main
+# Heroku builds apps/api/Dockerfile with apps/api as the build context.
+build:
+  docker:
+    web: apps/api/Dockerfile
+release:
+  image: web
+  # Migrate the schema, then (idempotently) refresh the pilot data before traffic switches over.
+  command:
+    - windsight release

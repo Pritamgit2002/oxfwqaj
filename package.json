@@ -1,0 +1,24 @@
+{
+  "name": "windsight",
+  "private": true,
+  "description": "Day-ahead wind generation forecast monitoring for UK power procurement.",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "codegen": "turbo run codegen",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.10"
+  }
+}

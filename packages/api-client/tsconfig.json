@@ -1,0 +1,4 @@
+{
+  "extends": "@windsight/typescript-config/library.json",
+  "include": ["src"]
+}

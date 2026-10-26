@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f7f9;
+  --color-actual: #0f172a;
+  --color-forecast: #0e7490;
+  --color-band: #67e8f9;
+  --color-adjusted: #7c3aed;
+  --color-short: #c2410c;
+  --color-surplus: #15803d;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+
+/* Recharts focus outlines are noisy on click; keep them for keyboard users only. */
+.recharts-wrapper :focus:not(:focus-visible) {
+  outline: none;
+}

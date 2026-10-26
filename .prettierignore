@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+packages/api-client/src/schema.ts
+packages/api-client/openapi.json
+apps/api
+.next
+.turbo

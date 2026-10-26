@@ -1,0 +1,37 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build output
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+*.db
+*.sqlite3
+
+# env
+.env
+.env.*
+!.env.example
+
+# os / editors
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# local preview config (machine-specific paths)
+.claude/launch.json
