@@ -46,3 +46,30 @@ def test_latest_per_target_respects_minimum_horizon() -> None:
     assert latest_per_target(points, timedelta(hours=4))[target].generation_mw == 2.0
     assert latest_per_target(points, timedelta(hours=24))[target].generation_mw == 1.0
     assert target not in latest_per_target(points, timedelta(hours=48))
+
+
+def test_delivery_bounds_autumn_clock_change_and_summer_offset() -> None:
+    start, end = delivery_bounds(date(2026, 10, 25), LONDON)  # fall back: 25h day
+    assert end - start == timedelta(hours=25)
+    start, _ = delivery_bounds(date(2026, 7, 1), LONDON)
+    assert start == utc(2026, 6, 30, 23)
+
+
+def test_decision_time_crosses_month_boundary() -> None:
+    assert decision_time(date(2026, 2, 1), time(9, 0), LONDON) == utc(2026, 1, 31, 9, 0)
+
+
+def test_select_run_at_includes_run_published_exactly_at_cutoff_and_sorts() -> None:
+    cutoff = utc(2026, 1, 14, 9)
+    points = [
+        ForecastPoint(cutoff, utc(2026, 1, 15, 1), 2.0),
+        ForecastPoint(cutoff, utc(2026, 1, 15, 0), 1.0),
+    ]
+    run = select_run_at(points, cutoff)
+    assert [p.start_time for p in run] == [utc(2026, 1, 15, 0), utc(2026, 1, 15, 1)]
+
+
+def test_latest_per_target_boundary_is_inclusive() -> None:
+    target = utc(2026, 1, 15, 12)
+    point = ForecastPoint(target - timedelta(hours=24), target, 1.0)
+    assert target in latest_per_target([point], timedelta(hours=24))

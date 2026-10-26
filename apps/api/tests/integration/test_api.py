@@ -91,3 +91,92 @@ def test_series_rejects_naive_datetimes(client: TestClient) -> None:
         "/api/v1/series", params={"start": "2026-01-15T00:00:00", "end": "2026-01-16T00:00:00"}
     )
     assert response.status_code == 422
+
+
+def test_request_id_is_generated_when_absent(client: TestClient) -> None:
+    first = client.get("/health").headers["X-Request-ID"]
+    second = client.get("/health").headers["X-Request-ID"]
+    assert len(first) == 16
+    assert first != second
+
+
+def test_cors_allows_the_web_origin_read_only(client: TestClient) -> None:
+    origin = "http://localhost:3000"
+    response = client.get("/health", headers={"Origin": origin})
+    assert response.headers["access-control-allow-origin"] == origin
+    assert "X-Request-ID" in response.headers["access-control-expose-headers"]
+    preflight = client.options(
+        "/api/v1/meta", headers={"Origin": origin, "Access-Control-Request-Method": "POST"}
+    )
+    assert preflight.status_code == 400  # only GET is allowed
+    other = client.get("/health", headers={"Origin": "https://evil.test"})
+    assert "access-control-allow-origin" not in other.headers
+
+
+def test_openapi_and_docs_are_served(client: TestClient) -> None:
+    schema = client.get("/openapi.json").json()
+    assert {"/api/v1/day-ahead", "/api/v1/accuracy/day-ahead", "/api/v1/series"} <= set(
+        schema["paths"]
+    )
+    assert client.get("/docs").status_code == 200
+
+
+@pytest.mark.parametrize(
+    ("path", "params"),
+    [
+        ("/api/v1/day-ahead", {}),  # delivery_date is required
+        ("/api/v1/day-ahead", {"delivery_date": "2026-01-01"}),  # day before the window
+        ("/api/v1/day-ahead", {"delivery_date": "2026-01-15", "cutoff": "25:00"}),
+        ("/api/v1/day-ahead", {"delivery_date": "not-a-date"}),
+        ("/api/v1/accuracy/day-ahead", {"cutoff": "noon"}),
+        ("/api/v1/series", {"horizon_hours": 73}),
+        ("/api/v1/series", {"horizon_hours": -1}),
+        ("/api/v1/series", {"start": "2026-01-16T00:00:00Z", "end": "2026-01-15T00:00:00Z"}),
+        ("/api/v1/series", {"start": "2026-01-01T00:00:00Z", "end": "2026-03-15T00:00:00Z"}),
+        (
+            "/api/v1/accuracy/horizon",
+            {"start": "2026-01-15T00:00:00", "end": "2026-01-16T00:00:00"},
+        ),
+    ],
+)
+def test_invalid_requests_are_rejected(
+    client: TestClient, path: str, params: dict[str, object]
+) -> None:
+    response = client.get(path, params=params)
+    assert response.status_code == 422
+    assert "detail" in response.json()
+
+
+def test_window_edges_are_accepted(client: TestClient) -> None:
+    for day in ("2026-01-02", "2026-02-01"):
+        assert client.get("/api/v1/day-ahead", params={"delivery_date": day}).status_code == 200
+
+
+def test_empty_database_degrades_gracefully(client: TestClient) -> None:
+    """Before the first ingestion every view still answers, with no numbers."""
+    day = client.get("/api/v1/day-ahead", params={"delivery_date": "2026-01-15"}).json()
+    assert day["forecast_publish_time"] is None
+    assert (day["summary"], day["calibration"], day["stats"], day["actual_mwh"]) == (None,) * 4
+    assert day["points"] == []
+
+    acc = client.get("/api/v1/accuracy/day-ahead").json()
+    assert (acc["stats"], acc["adjusted_stats"], acc["band_coverage_pct"]) == (None, None, None)
+    assert len(acc["daily"]) == 31
+    assert acc["by_hour"] == acc["error_histogram"] == []
+
+    assert client.get("/api/v1/accuracy/horizon").json()["buckets"] == []
+    assert client.get("/api/v1/series").json()["points"] == []
+
+    meta = client.get("/api/v1/meta").json()
+    assert meta["data"]["actuals"]["rows"] == 0
+    assert meta["data"]["last_ingested_at"] is None
+
+
+def test_no_run_before_cutoff_means_no_forecast(client: TestClient, seeded: Session) -> None:
+    # The earliest run for Jan 15 was published 07:30 on Jan 14: a 06:00 cutoff predates it.
+    body = client.get(
+        "/api/v1/day-ahead", params={"delivery_date": "2026-01-15", "cutoff": "06:00"}
+    ).json()
+    assert body["forecast_publish_time"] is None
+    assert body["summary"] is None
+    assert body["actual_mwh"] == 24 * 10_000  # the outturn is still shown

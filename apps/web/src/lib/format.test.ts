@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { clock, gw, gwh, longDate, mw, pct } from "./format";
+import { clock, dateTime, gw, gwh, hours, longDate, mw, pct } from "./format";
 
 describe("unit formatting", () => {
   it("formats power and energy with one decimal in GW/GWh", () => {
@@ -13,6 +13,15 @@ describe("unit formatting", () => {
   it("renders missing values as a dash", () => {
     expect(gw(null)).toBe("–");
     expect(mw(undefined)).toBe("–");
+    expect(pct(null)).toBe("–");
+    expect(hours(undefined)).toBe("–");
+  });
+
+  it("keeps negative values and rounds consistently", () => {
+    expect(gw(-1_650)).toBe("-1.7 GW");
+    expect(mw(0)).toBe("0 MW");
+    expect(hours(1.5)).toBe("1.5 h");
+    expect(gwh(0)).toBe("0.0 GWh");
   });
 });
 
@@ -24,5 +33,11 @@ describe("UK market time", () => {
 
   it("formats calendar dates without shifting the day", () => {
     expect(longDate("2026-01-15")).toContain("15 Jan 2026");
+    expect(longDate("2026-01-01")).toContain("Thu");
+  });
+
+  it("formats publish times in UK time across the clock change", () => {
+    expect(dateTime("2026-01-14T07:30:00Z")).toBe("14 Jan, 07:30");
+    expect(dateTime("2026-03-29T01:30:00Z")).toBe("29 Mar, 02:30");
   });
 });

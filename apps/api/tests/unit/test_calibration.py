@@ -40,3 +40,24 @@ def test_adjust_applies_bias_and_clamps_band_at_zero() -> None:
     low_wind = adjust(300, cal)
     assert low_wind.adjusted_mw == 0
     assert low_wind.band_low_mw == 0
+
+
+def test_calibrate_pools_errors_across_days_for_percentiles() -> None:
+    errors = {
+        date(2026, 1, 13): [float(e) for e in range(6)],
+        date(2026, 1, 12): [6.0, 7.0, 8.0, 9.0, 10.0],
+    }
+    cal = calibrate(errors, D, window_days=28)
+    assert cal is not None
+    assert cal.days_used == 2
+    assert (cal.p10_error_mw, cal.p90_error_mw) == pytest.approx((1, 9))
+    assert cal.window_days == 28
+
+
+def test_negative_bias_raises_the_adjusted_forecast() -> None:
+    cal = Calibration(
+        window_days=28, days_used=5, bias_mw=-800, p10_error_mw=-1_500, p90_error_mw=0
+    )
+    adjusted = adjust(5_000, cal)
+    assert adjusted.adjusted_mw == 5_800
+    assert (adjusted.band_low_mw, adjusted.band_high_mw) == (5_000, 6_500)
