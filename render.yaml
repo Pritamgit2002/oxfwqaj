@@ -1,0 +1,18 @@
+# Render Blueprint for the API (the web app goes to Vercel). Postgres lives on Neon.
+# Render dashboard → New → Blueprint → pick this repo, then paste the Neon pooled URL for DATABASE_URL.
+# The free plan has no pre-deploy step, so run `windsight release` against the database yourself
+# whenever a new migration lands (on a paid plan, add `preDeployCommand: windsight release`).
+services:
+  - type: web
+    name: windsight-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: apps/api
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health/ready
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
